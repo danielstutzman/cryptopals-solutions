@@ -140,3 +140,8 @@ def transpose_strings(strings)
   end
   out
 end
+
+def pad_with_pkcs7(input, expected_size)
+  padding = "\x04" * (expected_size - input.size)
+  input + padding
+end
