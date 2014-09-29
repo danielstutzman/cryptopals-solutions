@@ -1,4 +1,5 @@
 require 'base64'
+require 'openssl'
 
 def hex2binary(hex)
   binary = ''
@@ -144,4 +145,43 @@ end
 def pad_with_pkcs7(input, expected_size)
   padding = "\x04" * (expected_size - input.size)
   input + padding
+end
+
+def encrypt_aes128_cbc(plaintext, key, iv)
+  raise "Key must be size 16" if key.size != 16
+
+  encrypted = ''
+  last_block = iv
+  (plaintext.size / 16).times do |i|
+    block = plaintext[(i * 16)...((i + 1) * 16)]
+    block = fixed_xor(block, last_block)
+
+    cipher = OpenSSL::Cipher::AES.new(128, :ECB)
+    cipher.encrypt
+    cipher.key = key
+
+    last_block = (cipher.update(block) + cipher.final)[0...16]
+    encrypted += last_block
+  end
+  encrypted
+end
+
+def decrypt_aes128_cbc(ciphertext, key, iv)
+  raise "Key must be size 16" if key.size != 16
+
+  out = ''
+  last_block = iv
+  (ciphertext.size / 16).times do |i|
+    block = ciphertext[(i * 16)...((i + 1) * 16)]
+
+    decipher = OpenSSL::Cipher::AES.new(128, :ECB)
+    decipher.decrypt
+    decipher.key = key
+
+    plain_plus_last_block = decipher.update(block + block) # + decipher.final
+    out += fixed_xor(plain_plus_last_block, last_block)
+
+    last_block = block
+  end
+  out
 end
