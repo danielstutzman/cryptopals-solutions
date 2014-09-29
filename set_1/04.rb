@@ -40,5 +40,5 @@ binaries.size.times do |binary_num|
 end
 
 key2score.sort_by { |key, score| -score }.each do |key, score|
-  puts sprintf('%s %d', key.inspect, score)
+  puts sprintf('%s %f', key.inspect, score)
 end
