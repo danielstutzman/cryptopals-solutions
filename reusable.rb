@@ -34,3 +34,24 @@ def fixed_xor(binary1, binary2)
   end
   out
 end
+
+def build_character_table
+  character2count = {}
+  Dir.glob('../glowbe_corpus_sample/*.txt') do |path|
+    puts '  ' + path
+    contents = File.read(path)
+    contents.size.times do |i|
+      character2count[contents[i]] ||= 0
+      character2count[contents[i]] += 1
+    end
+  end
+  character2count
+end
+
+def score(possible_plaintext, character_table)
+  score = 0
+  possible_plaintext.size.times do |i|
+    score += character_table[possible_plaintext[i]] || 0
+  end
+  score
+end
