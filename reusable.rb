@@ -185,3 +185,28 @@ def decrypt_aes128_cbc(ciphertext, key, iv)
   end
   out
 end
+
+def random_bytes(n)
+  out = ''
+  n.times do
+    out += rand(256).chr
+  end
+  out
+end
+
+def encrypt_aes128_ecb(plaintext, key)
+  raise "Key must be size 16" if key.size != 16
+
+  encrypted = ''
+  ((plaintext.size + 15) / 16).times do |i|
+    block = plaintext[(i * 16)...((i + 1) * 16)]
+    block = pad_with_pkcs7(block, 16)
+
+    cipher = OpenSSL::Cipher::AES.new(128, :ECB)
+    cipher.encrypt
+    cipher.key = key
+
+    encrypted += (cipher.update(block) + cipher.final)[0...16]
+  end
+  encrypted
+end
