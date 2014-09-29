@@ -55,3 +55,11 @@ def score(possible_plaintext, character_table)
   end
   score
 end
+
+def encrypt_with_repeating_key_xor(plaintext, key)
+  out = ''
+  plaintext.size.times do |i|
+    out += (plaintext[i].ord ^ key[i % key.size].ord).chr
+  end
+  out
+end
