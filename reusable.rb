@@ -37,7 +37,7 @@ end
 
 def build_character_table
   character2count = {}
-  Dir.glob('../glowbe_corpus_sample/*.txt') do |path|
+  Dir.glob('../glowbe_corpus_sample/*au*.txt') do |path|
     puts '  ' + path
     contents = File.read(path)
     contents.size.times do |i|
