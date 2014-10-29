@@ -142,8 +142,9 @@ def transpose_strings(strings)
   out
 end
 
-def pad_with_pkcs7(input, expected_size)
-  padding = "\x04" * (expected_size - input.size)
+def pad_with_pkcs7(input, block_size)
+  num_chars = (block_size - 1) - ((input.size - 1) % block_size)
+  padding = "\x04" * num_chars
   input + padding
 end
 
@@ -196,17 +197,27 @@ end
 
 def encrypt_aes128_ecb(plaintext, key)
   raise "Key must be size 16" if key.size != 16
+  padded = pad_with_pkcs7(plaintext, 16)
 
-  encrypted = ''
-  ((plaintext.size + 15) / 16).times do |i|
-    block = plaintext[(i * 16)...((i + 1) * 16)]
-    block = pad_with_pkcs7(block, 16)
-
-    cipher = OpenSSL::Cipher::AES.new(128, :ECB)
-    cipher.encrypt
-    cipher.key = key
-
-    encrypted += (cipher.update(block) + cipher.final)[0...16]
-  end
+  cipher = OpenSSL::Cipher::AES.new(128, :ECB)
+  cipher.encrypt
+  cipher.key = key
+  cipher.padding = 0 # do padding ourselves
+  encrypted = cipher.update(padded) + cipher.final
   encrypted
+end
+
+def unpad_with_pkcs7(input)
+  input.gsub(/\x04*$/, '')
+end
+
+def decrypt_aes128_ecb(encrypted, key)
+  raise "Key must be size 16" if key.size != 16
+
+  cipher = OpenSSL::Cipher::AES.new(128, :ECB)
+  cipher.decrypt
+  cipher.key = key
+  cipher.padding = 0 # do padding ourselves
+  decrypted = cipher.update(encrypted) + cipher.final
+  unpad_with_pkcs7(decrypted)
 end
