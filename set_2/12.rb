@@ -35,19 +35,37 @@ block_size = determine_block_size()
 raise if guess_ecb_or_cbc() != 'ECB'
 
 def determine_next_byte(known_so_far, block_size)
-  block_minus_1 = 'A' * (block_size - known_so_far.size - 1) + known_so_far
-  encrypted_to_plaintext = {}
+  prefix = '-' * ((block_size - 1) - (known_so_far.size % block_size))
+  which_block = known_so_far.size / block_size
+  range = (which_block * block_size)...((which_block + 1) * block_size)
+  goal_encrypted_block = encrypt(prefix)[range]
+  synthesized_encrypted_block_to_last_char = {}
   256.times do |i|
-    plaintext = block_minus_1 + i.chr
-    encrypted = encrypt(plaintext)[0...block_size]
-    encrypted_to_plaintext[encrypted] = plaintext
+    synthesized_encrypted_block =
+      encrypt(prefix + known_so_far + i.chr)[range]
+    synthesized_encrypted_block_to_last_char[synthesized_encrypted_block] =
+      i.chr
   end
-  short_block = 'A' * (block_size - known_so_far.size - 1)
-  known_so_far + encrypted_to_plaintext[encrypt(short_block)[0...block_size]][-1]
+  synthesized_encrypted_block_to_last_char[goal_encrypted_block]
 end
 
 known_so_far = ''
-16.times do |i|
+loop do
+  next_byte = determine_next_byte(known_so_far, block_size)
+  break if next_byte.nil?
+  known_so_far += next_byte
   puts known_so_far
-  known_so_far = determine_next_byte(known_so_far, block_size)
 end
+
+# If block_size were 4 and plaintext were DoubleRain, try cracking:
+#   0 ---*
+#   1 --D*
+#   2 -Do*
+#   3 Dou*
+#   4 ---D oub*
+#   5 --Do ubl*
+#   6 -Dou ble*
+#   7 Doub leR*
+#   8 ---D oubl eRa*
+#   9 --Do uble Rai*
+#  10 -Dou bleR ain* -> no match
