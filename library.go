@@ -28,7 +28,7 @@ func HexToBytes(hex string) ([]byte, error) {
     }
     v2, found2 := hexDigitToValue[c2]
     if !found2 {
-      //panic(fmt.Sprintf("Bad hex digit %c in %s", c1, hex))
+      return nil, fmt.Errorf("Bad hex digit %c in %s", c2, hex)
     }
 
     var combined uint8 = v1 * 16 + v2

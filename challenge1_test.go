@@ -11,14 +11,19 @@ func TestHexToBytes(t *testing.T) {
   assert.Equal(t, []byte("\x40\xf5"), bytes1)
 }
 
-func TestHexToBytesInvalidChar(t *testing.T) {
-  _, err := HexToBytes("zz")
-  assert.NotEqual(t, nil, err)
+func TestHexToBytesInvalidChar3(t *testing.T) {
+  _, err := HexToBytes("12z4")
+  assert.Equal(t, "Bad hex digit z in 12z4", err.Error())
+}
+
+func TestHexToBytesInvalidChar4(t *testing.T) {
+  _, err := HexToBytes("123z")
+  assert.Equal(t, "Bad hex digit z in 123z", err.Error())
 }
 
 func TestHexToBytesInvalidLen(t *testing.T) {
   _, err := HexToBytes("123")
-  assert.NotEqual(t, nil, err)
+  assert.Equal(t, "Input doesn't have even number of runes: 123", err.Error())
 }
 
 func TestBytesToBase64(t *testing.T) {

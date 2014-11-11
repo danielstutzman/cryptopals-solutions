@@ -7,7 +7,7 @@ import (
 
 func TestFixedXorWrongLen(t *testing.T) {
   _, err := FixedXor([]byte{1, 2, 3}, []byte{1, 2})
-  assert.NotEqual(t, nil, err)
+  assert.Equal(t, "len(input1) is 3 but len(input2) is 2", err.Error())
 }
 
 func TestFixedXor(t *testing.T) {
