@@ -38,6 +38,27 @@ func HexToBytes(hex string) ([]byte, error) {
   return buffer.Bytes(), nil
 }
 
+func HexToBytesUnsafe(hex string) []byte {
+  output, err := HexToBytes(hex)
+  if err != nil {
+    panic(fmt.Sprintf("HexToBytes returned error unexpectedly: %s", err))
+  }
+  return output
+}
+
 func BytesToBase64(bytes []byte) string {
   return base64.StdEncoding.EncodeToString(bytes)
+}
+
+func FixedXor(input1 []byte, input2 []byte) ([]byte, error) {
+  if len(input1) != len(input2) {
+    return nil, fmt.Errorf("len(input1) is %d but len(input2) is %d",
+      len(input1), len(input2))
+  }
+
+  output := make([]byte, len(input1))
+  for i := 0; i < len(input1); i += 1 {
+    output[i] = input1[i] ^ input2[i]
+  }
+  return output, nil
 }
