@@ -1,8 +1,8 @@
 require 'base64'
 require '../reusable'
 
-UNKNOWN_KEY = "\x65" * 16 #random_bytes(16)
-UNKNOWN_IV  = "\x01" * 16 #random_bytes(16)
+UNKNOWN_KEY = random_bytes(16)
+UNKNOWN_IV  = random_bytes(16)
 
 def encrypt(data)
   prefix = "comment1=cooking%20MCs;userdata="
