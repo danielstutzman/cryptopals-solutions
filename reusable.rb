@@ -1,6 +1,9 @@
 require 'base64'
 require 'openssl'
 
+class InvalidPadding < RuntimeError
+end
+
 def hex2binary(hex)
   binary = ''
   (0...(hex.size / 2)).each do |i|
@@ -143,9 +146,19 @@ def transpose_strings(strings)
 end
 
 def pad_with_pkcs7(input, block_size)
-  num_chars = (block_size - 1) - ((input.size - 1) % block_size)
-  padding = "\x04" * num_chars
-  input + padding
+  num_fill_bits = block_size - (input.size % block_size)
+  input + (num_fill_bits.chr * num_fill_bits)
+end
+
+def unpad_with_pkcs7(padded)
+  last_byte = padded[-1]
+  suffix = padded[-(last_byte.ord)..-1]
+  if suffix == last_byte * last_byte.ord
+    padded[0...-(last_byte.ord)]
+  else
+    raise InvalidPadding.new(
+      "Bad suffix #{suffix.inspect} from last byte #{last_byte.inspect}")
+  end
 end
 
 def encrypt_aes128_cbc(plaintext, key, iv)
@@ -205,10 +218,6 @@ def encrypt_aes128_ecb(plaintext, key)
   cipher.padding = 0 # do padding ourselves
   encrypted = cipher.update(padded) + cipher.final
   encrypted
-end
-
-def unpad_with_pkcs7(input)
-  input.gsub(/\x04*$/, '')
 end
 
 def decrypt_aes128_ecb(encrypted, key)

@@ -4,26 +4,11 @@ require '../reusable'
 UNKNOWN_KEY = "\x65" * 16 #random_bytes(16)
 UNKNOWN_IV  = "\x01" * 16 #random_bytes(16)
 
-def pad_with_pkcs7(input)
-  num_fill_bits = 16 - (input.size % 16)
-  input + (num_fill_bits.chr * num_fill_bits)
-end
-
-def unpad_with_pkcs7(padded)
-  last_byte = padded[-1]
-  suffix = padded[-(last_byte.ord)..-1]
-  if suffix == last_byte * last_byte.ord
-    padded[0...-(last_byte.ord)]
-  else
-    raise "Bad suffix #{suffix.inspect}"
-  end
-end
-
 def encrypt(data)
   prefix = "comment1=cooking%20MCs;userdata="
   suffix = ";comment2=%20like%20a%20pound%20of%20bacon"
   plaintext = prefix + data.gsub(';', '%3B').gsub('=', '%3D') + suffix
-  encrypt_aes128_cbc(pad_with_pkcs7(plaintext), UNKNOWN_KEY, UNKNOWN_IV)
+  encrypt_aes128_cbc(pad_with_pkcs7(plaintext, 16), UNKNOWN_KEY, UNKNOWN_IV)
 end
 
 def decrypt(encrypted)
