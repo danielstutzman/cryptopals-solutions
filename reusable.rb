@@ -166,8 +166,9 @@ def encrypt_aes128_cbc(plaintext, key, iv)
 
   encrypted = ''
   last_block = iv
-  (plaintext.size / 16).times do |i|
-    block = plaintext[(i * 16)...((i + 1) * 16)]
+  padded = pad_with_pkcs7(plaintext, 16)
+  (padded.size / 16).times do |i|
+    block = padded[(i * 16)...((i + 1) * 16)]
     block = fixed_xor(block, last_block)
 
     cipher = OpenSSL::Cipher::AES.new(128, :ECB)
@@ -182,6 +183,9 @@ end
 
 def decrypt_aes128_cbc(ciphertext, key, iv)
   raise "Key must be size 16" if key.size != 16
+  if ciphertext.size % 16 != 0
+    raise "Ciphertext size must be a multiple of 16"
+  end
 
   out = ''
   last_block = iv
@@ -197,7 +201,7 @@ def decrypt_aes128_cbc(ciphertext, key, iv)
 
     last_block = block
   end
-  out
+  unpad_with_pkcs7(out)
 end
 
 def random_bytes(n)
