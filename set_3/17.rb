@@ -22,7 +22,7 @@ PLAINTEXTS = %w[
   MDAwMDA3SSdtIG9uIGEgcm9sbCwgaXQncyB0aW1lIHRvIGdvIHNvbG8=
   MDAwMDA4b2xsaW4nIGluIG15IGZpdmUgcG9pbnQgb2g=
   MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93
-]
+].map { |base64| Base64.decode64(base64) }
 
 def encrypt(plaintext)
   encrypted = encrypt_aes128_cbc(plaintext, UNKNOWN_KEY, KNOWN_IV)
@@ -80,4 +80,4 @@ end
 plaintext = PLAINTEXTS[rand(PLAINTEXTS.size)]
 encrypted, known_iv = encrypt(plaintext)
 padded = hack_cbc_encryption(encrypted, known_iv)
-puts Base64.decode64(unpad_with_pkcs7(padded))
+puts unpad_with_pkcs7(padded)
